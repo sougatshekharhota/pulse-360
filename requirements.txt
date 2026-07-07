@@ -1,0 +1,7 @@
+requests>=2.31
+pandas>=2.1
+PyYAML>=6.0
+streamlit>=1.31
+plotly>=5.18
+vaderSentiment>=3.3
+pytrends>=4.9

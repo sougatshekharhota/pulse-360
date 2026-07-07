@@ -1,0 +1,37 @@
+# PULSE-360 configuration
+# The brand you track, plus the competitors it is benchmarked against.
+# Entity order matters: chart colors are assigned in this fixed order.
+#
+# news_query: the phrase searched in world news (GDELT). Use a distinctive
+# phrase for short/ambiguous brand names ("Vi" alone would match everything).
+
+brand:
+  name: Airtel
+  wikipedia_article: Bharti_Airtel
+  news_query: Airtel
+
+competitors:
+  - name: Jio
+    wikipedia_article: Jio
+    news_query: Reliance Jio
+  - name: Vi
+    wikipedia_article: Vodafone_Idea
+    news_query: Vodafone Idea
+
+# How far back to fetch/keep daily series.
+lookback_days: 90
+
+# Reddit public search (optional — Reddit now blocks most keyless scripted
+# access with 403; the fetcher degrades gracefully if blocked).
+reddit:
+  results_per_brand: 100
+  time_window: month   # hour | day | week | month | year
+
+# Channel Health Score weights — the same weighted-signal approach I used
+# for enterprise account health scoring, applied to marketing channels.
+# Must sum to 1.0.
+health_weights:
+  momentum: 0.35        # week-over-week trajectory
+  stability: 0.20       # volatility of the daily series (lower churn of attention)
+  sentiment: 0.25       # tone of news/community mentions
+  share_of_voice: 0.20  # brand share vs competitors
