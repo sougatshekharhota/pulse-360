@@ -30,6 +30,10 @@ against competitors on an interactive Streamlit dashboard.
 | Scheduled automation | GitHub Actions daily refresh (`.github/workflows/refresh-data.yml`) |
 | Interactive dashboarding | Streamlit + Plotly (`app.py`) |
 
+📖 **Want the full story?** The [**PULSE-360 Handbook**](docs/HANDBOOK.md)
+explains every flow, formula, and design decision — from anchor
+normalization to why the database is committed to the repo.
+
 ## Quickstart (60 seconds, zero credentials)
 
 ```bash
