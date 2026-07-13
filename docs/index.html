@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PULSE-360 ✲ Marketing Intelligence Dashboard</title>
+<meta name="description" content="Cross-channel marketing intelligence — live signals from Google Trends, Wikipedia and world news, scored into one channel health model. By Sougat Shekhar Hota.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F8FA; --ink:#051C2C; --mut:rgba(5,28,44,.58); --line:rgba(5,28,44,.14);
+    --card:#FFFFFF; --panel:#E6EBF1; --accent:#2251FF;
+    --good:#0f7a3d; --warn:#b7791f; --bad:#c0362c;
+    --serif:'Newsreader', Georgia, serif; --sans:'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased}
+  body::before{content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:72px 72px; opacity:.13}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 clamp(16px,4vw,40px); position:relative; z-index:1}
+  a{color:inherit}
+  .caps{font:500 11px/1 var(--sans); text-transform:uppercase; letter-spacing:.1em}
+
+  header.site{position:sticky; top:0; z-index:20; background:rgba(246,248,250,.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+  header.site .wrap{display:flex; align-items:center; justify-content:space-between; padding:16px clamp(16px,4vw,40px)}
+  .brand{font:600 14px/1 var(--sans); text-transform:uppercase; letter-spacing:.12em; text-decoration:none; display:flex; align-items:center; gap:9px}
+  .brand .mark{color:var(--accent); font:400 17px/1 var(--serif); animation:spin 14s linear infinite; display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .hl{display:flex; gap:22px; font:500 12px/1 var(--sans); text-transform:uppercase; letter-spacing:.09em}
+  .hl a{color:var(--mut); text-decoration:none; transition:color .3s} .hl a:hover{color:var(--accent)}
+
+  .hero{padding:clamp(40px,7vh,72px) 0 12px}
+  .hero .eyebrow{color:var(--accent)}
+  .hero h1{font:400 clamp(34px,5.5vw,62px)/1.03 var(--serif); letter-spacing:-.015em; margin:14px 0 12px}
+  .hero p{font:400 clamp(15px,1.9vw,18px)/1.5 var(--serif); color:var(--mut); max-width:60ch}
+  .updated{margin-top:10px; font-size:12.5px; color:var(--mut)}
+
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin:26px 0 8px}
+  .kpi{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px}
+  .kpi .lab{font:500 11px/1.3 var(--sans); text-transform:uppercase; letter-spacing:.09em; color:var(--mut)}
+  .kpi .val{font:400 34px/1 var(--serif); margin:10px 0 6px}
+  .kpi .val small{font:400 15px/1 var(--serif); color:var(--mut)}
+  .kpi .sub{font-size:12.5px; font-weight:500}
+  .kpi.primary{background:var(--ink); color:#fff}
+  .kpi.primary .lab,.kpi.primary .val small{color:rgba(255,255,255,.65)}
+  .g-A{color:var(--good)} .g-B{color:var(--warn)} .g-C{color:var(--bad)} .g-D{color:var(--bad)}
+  .up{color:var(--good)} .down{color:var(--bad)}
+
+  section{padding:34px 0}
+  h2.sec{font:400 clamp(24px,3vw,34px)/1.1 var(--serif); margin-bottom:4px}
+  .sub2{color:var(--mut); font-size:14px; margin-bottom:18px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 24px}
+  .chart{width:100%; height:360px}
+  .chart.sm{height:230px}
+
+  .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px}
+  .tabs button{cursor:pointer; background:var(--panel); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; font:500 12.5px/1 var(--sans); color:var(--ink); transition:background .3s,color .3s}
+  .tabs button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
+  .row2{display:grid; grid-template-columns:1.5fr 1fr; gap:20px; align-items:start}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px}
+  th,td{text-align:left; padding:11px 10px; border-bottom:1px solid var(--line)}
+  th{font:600 11px/1 var(--sans); text-transform:uppercase; letter-spacing:.07em; color:var(--mut)}
+  td.n, th.n{text-align:right; font-variant-numeric:tabular-nums}
+  .scorecell{display:inline-block; min-width:34px; padding:3px 8px; border-radius:6px; font-weight:600; text-align:center}
+  .pos{color:var(--good)} .neg{color:var(--bad)}
+  .senti .s-pos{color:var(--good)} .senti .s-neg{color:var(--bad)} .senti .s-neu{color:var(--mut)}
+
+  footer{border-top:1px solid var(--line); padding:30px 0 44px; color:var(--mut); font-size:13px; margin-top:20px}
+  footer a{color:var(--accent); text-decoration:none}
+  #loading{padding:60px 0; text-align:center; color:var(--mut); font-family:var(--serif); font-style:italic; font-size:18px}
+
+  @media (max-width:820px){ .row2{grid-template-columns:1fr} .hl a.hide-sm{display:none} }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="mark">✲</span> PULSE-360</a>
+    <div class="hl">
+      <a class="hide-sm" href="https://github.com/sougatshekhar97-cpu/pulse-360" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://sougatshekhar97-cpu.github.io/portfolio/">← Portfolio</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+  <div class="hero">
+    <div class="eyebrow caps">Cross-Channel Marketing Intelligence</div>
+    <h1 id="h-title">Live signals in. One health score out.</h1>
+    <p id="h-sub"></p>
+    <div class="updated" id="h-updated"></div>
+  </div>
+
+  <div id="loading">Loading intelligence…</div>
+  <div id="app" style="display:none">
+    <div class="kpis" id="kpis"></div>
+
+    <section>
+      <h2 class="sec">Attention over time</h2>
+      <div class="sub2">Daily signal per brand — switch channels below.</div>
+      <div class="tabs" id="chan-tabs"></div>
+      <div class="row2">
+        <div class="card"><div id="line" class="chart"></div></div>
+        <div style="display:flex; flex-direction:column; gap:20px">
+          <div class="card"><div class="caps" style="color:var(--accent); margin-bottom:8px">Share of voice · 7d</div><div id="sov" class="chart sm"></div></div>
+          <div class="card"><div class="caps" style="color:var(--accent); margin-bottom:8px">Momentum · WoW</div><div id="mom" class="chart sm"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="sec">Channel Health Scores</h2>
+      <div class="sub2">Brand vs competitors. Score = 35% momentum + 20% stability + 25% sentiment + 20% share of voice. A ≥ 75 · B ≥ 60 · C ≥ 45 · D &lt; 45.</div>
+      <div class="card" style="overflow-x:auto"><table id="benchmark"></table></div>
+    </section>
+
+    <section id="mentions-sec">
+      <h2 class="sec">Recent mentions</h2>
+      <div class="sub2">Latest news coverage with sentiment.</div>
+      <div class="card" style="overflow-x:auto"><table id="mentions"></table></div>
+    </section>
+  </div>
+</main>
+
+<footer><div class="wrap">
+  <span>Data refreshed daily via GitHub Actions · sources: Google Trends, Wikipedia, GDELT world news.
+  Built by <a href="https://sougatshekhar97-cpu.github.io/portfolio/">Sougat Shekhar Hota</a>.</span>
+</div></footer>
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const SERIES = ['#2251FF','#1baf7a','#eda100','#008300','#4a3aa7','#e34948','#e87ba4','#eb6834'];
+const INK='#051C2C', MUT='rgba(5,28,44,.55)', GRID='rgba(5,28,44,.10)';
+const gradeClass = g => 'g-'+g;
+const BASE = {displayModeBar:false, responsive:true};
+const LAYOUT = () => ({
+  margin:{l:44,r:14,t:10,b:34}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+  font:{family:"'Helvetica Neue',Arial,sans-serif", color:MUT, size:12},
+  xaxis:{gridcolor:GRID, zeroline:false}, yaxis:{gridcolor:GRID, zeroline:false},
+  hovermode:'x unified', showlegend:false
+});
+
+let D, colorOf;
+
+fetch('dashboard.json').then(r => r.json()).then(data => {
+  D = data;
+  colorOf = {}; D.entities.forEach((e,i) => colorOf[e] = SERIES[i % SERIES.length]);
+  $('#h-sub').textContent = `Benchmarking ${D.brand} against ${D.entities.slice(1).join(', ')} across `
+    + `${D.sources.length} public channels — the same weighted-signal health model I built to run a ₹384 Mn enterprise portfolio.`;
+  $('#h-updated').textContent = 'Last updated ' + D.updated;
+  renderKPIs(); renderBenchmark(); renderMentions(); buildTabs();
+  $('#loading').style.display='none'; $('#app').style.display='block';
+  drawChannel(D.sources[0]);
+}).catch(e => { $('#loading').textContent = 'Could not load dashboard data.'; });
+
+function renderKPIs(){
+  let h = `<div class="kpi primary"><div class="lab">${D.brand} · overall health</div>`
+    + `<div class="val">${D.overall.score}<small> / 100</small></div>`
+    + `<div class="sub" style="color:#fff">Grade ${D.overall.grade}</div></div>`;
+  D.kpis.forEach(k => {
+    const arrow = k.wow >= 0 ? 'up' : 'down';
+    h += `<div class="kpi"><div class="lab">${k.channel}</div>`
+      + `<div class="val ${gradeClass(k.grade)}">${k.score} <small>· ${k.grade}</small></div>`
+      + `<div class="sub ${arrow}">${(k.wow>=0?'+':'')}${(k.wow*100).toFixed(0)}% WoW</div></div>`;
+  });
+  $('#kpis').innerHTML = h;
+}
+
+function buildTabs(){
+  $('#chan-tabs').innerHTML = D.sources.map((s,i) =>
+    `<button data-src="${s}" class="${i===0?'on':''}">${D.sourceLabels[s]||s}</button>`).join('');
+  document.querySelectorAll('#chan-tabs button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#chan-tabs button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); drawChannel(b.dataset.src);
+  }));
+}
+
+function drawChannel(src){
+  const s = D.series[src] || {};
+  const traces = D.entities.filter(e => s[e]).map(e => ({
+    x: s[e].map(p => p[0]), y: s[e].map(p => p[1]), name:e, mode:'lines',
+    line:{color:colorOf[e], width:2}
+  }));
+  Plotly.react('line', traces, {...LAYOUT(), showlegend:true,
+    legend:{orientation:'h', y:1.12, font:{size:11}}, yaxis:{gridcolor:GRID, rangemode:'tozero'}}, BASE);
+
+  const sov = (D.sov[src]||[]).slice().sort((a,b)=>a.sov-b.sov);
+  Plotly.react('sov', [{type:'bar', orientation:'h', x:sov.map(d=>d.sov), y:sov.map(d=>d.entity),
+    marker:{color:sov.map(d=>colorOf[d.entity])}, text:sov.map(d=>(d.sov*100).toFixed(0)+'%'),
+    textposition:'outside', hoverinfo:'skip'}],
+    {...LAYOUT(), margin:{l:90,r:30,t:6,b:24}, xaxis:{tickformat:'.0%', gridcolor:GRID, range:[0, Math.max(...sov.map(d=>d.sov),0.1)*1.3]}}, BASE);
+
+  const mom = (D.momentum[src]||[]).slice().sort((a,b)=>a.wow-b.wow);
+  const span = Math.max(...mom.map(d=>Math.abs(d.wow)),0.1)*1.3;
+  Plotly.react('mom', [{type:'bar', orientation:'h', x:mom.map(d=>d.wow), y:mom.map(d=>d.entity),
+    marker:{color:mom.map(d=>d.wow>=0?'#2251FF':'#c0362c')}, text:mom.map(d=>(d.wow>=0?'+':'')+(d.wow*100).toFixed(0)+'%'),
+    textposition:'outside', hoverinfo:'skip'}],
+    {...LAYOUT(), margin:{l:90,r:30,t:6,b:24}, xaxis:{tickformat:'+.0%', gridcolor:GRID, range:[-span,span], zeroline:true, zerolinecolor:MUT}}, BASE);
+}
+
+function scoreBg(s){ const t=Math.max(0,Math.min(1,(s-30)/60)); return `rgba(34,81,255,${0.08+t*0.5})`; }
+function renderBenchmark(){
+  const channels = [...new Set(D.scores.map(s=>s.channel))];
+  const byEnt = {}; D.scores.forEach(s => { (byEnt[s.entity] ||= {})[s.channel] = s.score; });
+  let h = '<thead><tr><th>Brand</th>' + channels.map(c=>`<th class="n">${c}</th>`).join('') + '<th class="n">Overall</th></tr></thead><tbody>';
+  D.entities.forEach(e => {
+    const vals = channels.map(c => byEnt[e]?.[c]);
+    const avg = Math.round(vals.filter(v=>v!=null).reduce((a,b)=>a+b,0)/vals.filter(v=>v!=null).length);
+    h += `<tr><td><b>${e}</b></td>` + vals.map(v =>
+      `<td class="n"><span class="scorecell" style="background:${scoreBg(v)}">${v??'–'}</span></td>`).join('')
+      + `<td class="n"><span class="scorecell" style="background:${scoreBg(avg)}">${avg}</span></td></tr>`;
+  });
+  $('#benchmark').innerHTML = h + '</tbody>';
+}
+
+function renderMentions(){
+  if(!D.mentions.length){ $('#mentions-sec').style.display='none'; return; }
+  let h = '<thead><tr><th>When</th><th>Brand</th><th>Mention</th><th class="n">Engagement</th><th>Sentiment</th></tr></thead><tbody class="senti">';
+  D.mentions.forEach(m => {
+    const s = m.sentiment;
+    const sc = s>0.15?'s-pos':(s<-0.15?'s-neg':'s-neu');
+    const sl = s>0.15?'▲ positive':(s<-0.15?'▼ negative':'· neutral');
+    h += `<tr><td>${m.when}</td><td>${m.brand}</td><td>${escapeHtml(m.title)}</td>`
+      + `<td class="n">${m.score}</td><td class="${sc}">${sl} (${s>=0?'+':''}${s.toFixed(2)})</td></tr>`;
+  });
+  $('#mentions').innerHTML = h + '</tbody>';
+}
+function escapeHtml(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+addEventListener('resize', () => { if(D){ const on=document.querySelector('#chan-tabs button.on'); if(on) drawChannel(on.dataset.src); }});
+</script>
+</body>
+</html>

@@ -25,10 +25,13 @@ jobs:
       - name: Fetch live data (keyless sources)
         run: python run_fetch.py --sources wikipedia,news,trends
 
-      - name: Commit refreshed database
+      - name: Rebuild dashboard data (for GitHub Pages)
+        run: python export_dashboard.py
+
+      - name: Commit refreshed data + dashboard
         run: |
           git config user.name "pulse-360-bot"
           git config user.email "actions@github.com"
-          git add data/pulse.db
+          git add data/pulse.db docs/dashboard.json
           git diff --cached --quiet || git commit -m "data: daily refresh $(date -u +%F)"
           git push

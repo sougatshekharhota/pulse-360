@@ -2,7 +2,7 @@
 
 **Live signals in. One health score out.**
 
-🔴 **Live dashboard:** https://pulse-360-ijsehujby7ckf5mrcs6pds.streamlit.app/
+🔴 **Live dashboard (GitHub Pages, always on):** https://sougatshekhar97-cpu.github.io/pulse-360/
 
 PULSE-360 pulls live data from independent public sources — Google Trends,
 Wikipedia pageviews, GDELT world news — unifies it into one schema, and scores
@@ -143,10 +143,13 @@ pulse-360/
 
 ## Live deployment
 
-The dashboard is deployed on [Streamlit Community Cloud](https://streamlit.io/cloud):
-**https://pulse-360-ijsehujby7ckf5mrcs6pds.streamlit.app/** — it redeploys
-automatically whenever the daily GitHub Action commits fresh data, so the
-live app is always current with zero infrastructure.
+Two ways to run it, both free and zero-maintenance:
+
+- **GitHub Pages (always on):** **https://sougatshekhar97-cpu.github.io/pulse-360/** — a
+  static dashboard (`docs/`) rendered in the browser from a precomputed `docs/dashboard.json`.
+  The daily GitHub Action rebuilds that JSON, so the page is always current and never sleeps.
+- **Streamlit app (`app.py`):** the full interactive Python app, runnable locally or on
+  [Streamlit Community Cloud](https://streamlit.io/cloud).
 
 ## License
 
