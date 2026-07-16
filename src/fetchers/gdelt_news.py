@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 import requests
 
 API = "https://api.gdeltproject.org/api/v2/doc/doc"
-HEADERS = {"User-Agent": "PULSE-360 portfolio project (github.com/sougatshekhar97-cpu/pulse-360)"}
+HEADERS = {"User-Agent": "PULSE-360 portfolio project (github.com/sougatshekharhota/pulse-360)"}
 RATE_DELAY_S = 10.0
 
 

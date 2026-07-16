@@ -2,7 +2,7 @@
 
 **Live signals in. One health score out.**
 
-🔴 **Live dashboard (GitHub Pages, always on):** https://sougatshekhar97-cpu.github.io/pulse-360/
+🔴 **Live dashboard (GitHub Pages, always on):** https://sougatshekharhota.github.io/pulse-360/
 
 PULSE-360 pulls live data from independent public sources — Google Trends,
 Wikipedia pageviews, GDELT world news — unifies it into one schema, and scores
@@ -39,7 +39,7 @@ normalization to why the database is committed to the repo.
 ## Quickstart (60 seconds, zero credentials)
 
 ```bash
-git clone https://github.com/sougatshekhar97-cpu/pulse-360.git
+git clone https://github.com/sougatshekharhota/pulse-360.git
 cd pulse-360
 pip install -r requirements.txt
 python run_fetch.py --demo     # deterministic demo data, no network needed
@@ -145,7 +145,7 @@ pulse-360/
 
 Two ways to run it, both free and zero-maintenance:
 
-- **GitHub Pages (always on):** **https://sougatshekhar97-cpu.github.io/pulse-360/** — a
+- **GitHub Pages (always on):** **https://sougatshekharhota.github.io/pulse-360/** — a
   static dashboard (`docs/`) rendered in the browser from a precomputed `docs/dashboard.json`.
   The daily GitHub Action rebuilds that JSON, so the page is always current and never sleeps.
 - **Streamlit app (`app.py`):** the full interactive Python app, runnable locally or on
@@ -158,5 +158,5 @@ MIT — see [LICENSE](LICENSE).
 ---
 
 **Sougat Shekhar Hota** · Strategic Account Manager, Mumbai ·
-[Portfolio](https://sougatshekhar97-cpu.github.io/portfolio/) ·
-[GitHub](https://github.com/sougatshekhar97-cpu)
+[Portfolio](https://sougatshekharhota.github.io/portfolio/) ·
+[GitHub](https://github.com/sougatshekharhota)

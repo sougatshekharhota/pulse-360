@@ -210,8 +210,8 @@ with st.sidebar:
         "portfolio at Bharti Airtel, transplanted to marketing analytics."
     )
     st.markdown(
-        "[GitHub repo](https://github.com/sougatshekhar97-cpu/pulse-360) · "
-        "[Portfolio](https://sougatshekhar97-cpu.github.io/portfolio/)"
+        "[GitHub repo](https://github.com/sougatshekharhota/pulse-360) · "
+        "[Portfolio](https://sougatshekharhota.github.io/portfolio/)"
     )
     with st.expander("Methodology"):
         st.markdown(

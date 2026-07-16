@@ -16,7 +16,7 @@ API = (
     "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/"
     "en.wikipedia/all-access/all-agents/{article}/daily/{start}/{end}"
 )
-HEADERS = {"User-Agent": "PULSE-360 portfolio project (github.com/sougatshekhar97-cpu/pulse-360)"}
+HEADERS = {"User-Agent": "PULSE-360 portfolio project (github.com/sougatshekharhota/pulse-360)"}
 
 
 def fetch(cfg: dict) -> list[tuple]:

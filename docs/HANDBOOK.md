@@ -398,6 +398,6 @@ Known limitations, stated honestly:
 
 ---
 
-*Handbook for [PULSE-360](https://github.com/sougatshekhar97-cpu/pulse-360)
+*Handbook for [PULSE-360](https://github.com/sougatshekharhota/pulse-360)
 by Sougat Shekhar Hota ·
-[Portfolio](https://sougatshekhar97-cpu.github.io/portfolio/)*
+[Portfolio](https://sougatshekharhota.github.io/portfolio/)*
