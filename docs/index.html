@@ -74,6 +74,22 @@
   footer a{color:var(--accent); text-decoration:none}
   #loading{padding:60px 0; text-align:center; color:var(--mut); font-family:var(--serif); font-style:italic; font-size:18px}
 
+  .modebar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
+  .modebar button{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:11px 20px;font:500 13px/1 var(--sans);color:var(--ink);transition:background .3s,color .3s}
+  .modebar button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .research{display:none;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:16px}
+  .research.on{display:block}
+  .rform{display:flex;gap:10px;flex-wrap:wrap}
+  .rform input{flex:1 1 240px;min-width:180px;padding:13px 15px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font:400 15px/1 var(--sans);outline:none}
+  .rform input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,81,255,.12)}
+  .dbtn{cursor:pointer;border-radius:11px;padding:13px 22px;font:600 12px/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;border:1px solid var(--line);background:#fff;color:var(--ink);transition:all .25s}
+  .dbtn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .dbtn.primary:hover{background:var(--ink);border-color:var(--ink)}
+  .examples{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--mut);font-size:13px;margin-top:12px}
+  .examples button{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 13px;font:500 12px/1 var(--sans);color:var(--ink)}
+  .examples button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .rbanner{font-size:13.5px;margin-top:12px;color:var(--mut);display:none}
+  .rbanner.on{display:block}
   @media (max-width:820px){ .row2{grid-template-columns:1fr} .hl a.hide-sm{display:none} }
 </style>
 </head>
@@ -94,6 +110,26 @@
     <h1 id="h-title">Live signals in. One health score out.</h1>
     <p id="h-sub"></p>
     <div class="updated" id="h-updated"></div>
+  </div>
+
+  <div class="modebar">
+    <button id="mode-sample" class="on">📊 Sample: Airtel vs telecom giants</button>
+    <button id="mode-research">🔎 Research your own brands</button>
+  </div>
+  <div class="research" id="research">
+    <div class="sub2" style="margin-bottom:12px">Enter a brand and up to four competitors — fetched live in your browser (no keys, nothing leaves your device). Covers Knowledge Interest (Wikipedia) and, where available, News Coverage.</div>
+    <div class="rform">
+      <input id="r-brand" type="text" placeholder="Your brand — e.g. Nike" autocomplete="off">
+      <input id="r-comp" type="text" placeholder="Competitors, comma-separated — e.g. Adidas, Puma, New Balance" autocomplete="off">
+      <button class="dbtn primary" id="r-go">Analyze</button>
+    </div>
+    <div class="examples">
+      <span>Try:</span>
+      <button data-b="Nike, Inc." data-c="Adidas, Puma, New Balance">Sportswear</button>
+      <button data-b="Coca-Cola" data-c="PepsiCo">Beverages</button>
+      <button data-b="Tesla, Inc." data-c="Ford Motor Company, General Motors">Automakers</button>
+    </div>
+    <div class="rbanner" id="r-banner"></div>
   </div>
 
   <div id="loading">Loading intelligence…</div>
@@ -149,16 +185,24 @@ const LAYOUT = () => ({
 
 let D, colorOf;
 
-fetch('dashboard.json').then(r => r.json()).then(data => {
+function activate(data, subText, updatedText){
   D = data;
   colorOf = {}; D.entities.forEach((e,i) => colorOf[e] = SERIES[i % SERIES.length]);
-  $('#h-sub').textContent = `Benchmarking ${D.brand} against ${D.entities.slice(1).join(', ')} across `
-    + `${D.sources.length} public channels — the same weighted-signal health model I built to run a ₹384 Mn enterprise portfolio.`;
-  $('#h-updated').textContent = 'Last updated ' + D.updated;
+  $('#h-sub').textContent = subText;
+  $('#h-updated').textContent = updatedText;
   renderKPIs(); renderBenchmark(); renderMentions(); buildTabs();
   $('#loading').style.display='none'; $('#app').style.display='block';
   drawChannel(D.sources[0]);
-}).catch(e => { $('#loading').textContent = 'Could not load dashboard data.'; });
+}
+function loadSample(){
+  $('#app').style.display='none'; $('#loading').style.display='block'; $('#loading').textContent='Loading intelligence…';
+  fetch('dashboard.json').then(r=>r.json()).then(data=>{
+    activate(data,
+      `Benchmarking ${data.brand} against ${data.entities.slice(1).join(', ')} across ${data.sources.length} public channels — the same weighted-signal health model I built to run a ₹384 Mn enterprise portfolio.`,
+      'Last updated ' + data.updated);
+  }).catch(()=>{ $('#loading').textContent='Could not load dashboard data.'; });
+}
+loadSample();
 
 function renderKPIs(){
   let h = `<div class="kpi primary"><div class="lab">${D.brand} · overall health</div>`
@@ -222,6 +266,7 @@ function renderBenchmark(){
 
 function renderMentions(){
   if(!D.mentions.length){ $('#mentions-sec').style.display='none'; return; }
+  $('#mentions-sec').style.display='';
   let h = '<thead><tr><th>When</th><th>Brand</th><th>Mention</th><th class="n">Engagement</th><th>Sentiment</th></tr></thead><tbody class="senti">';
   D.mentions.forEach(m => {
     const s = m.sentiment;
@@ -233,6 +278,112 @@ function renderMentions(){
   $('#mentions').innerHTML = h + '</tbody>';
 }
 function escapeHtml(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+/* ===================== Research your own brands (live, in-browser) ===================== */
+const LABELS = {wikipedia:'Knowledge Interest', news:'News Coverage'};
+const meanA = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
+const stdA = a => a.length<2 ? 0 : Math.sqrt(a.reduce((s,x)=>s+(x-meanA(a))**2,0)/(a.length-1));
+const gradeOf = s => s>=75?'A':(s>=60?'B':(s>=45?'C':'D'));
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const POS = 'gain gains grow growth surge soar jump rise rises rising boost strong record beats beat win wins profit rally up higher best success launches launch expand expands leads leader top upgrade approve praise positive momentum breakthrough'.split(' ');
+const NEG = 'loss losses fall falls drop drops plunge slump decline sinks weak miss misses lawsuit recall probe fraud crisis cut cuts layoff layoffs down lower worst fail fails scandal warning warns concern risk slash slashes fine penalty outage breach hack'.split(' ');
+function lexScore(text){ const w=String(text).toLowerCase().match(/[a-z]+/g)||[]; let p=0,n=0;
+  w.forEach(t=>{ if(POS.includes(t))p++; else if(NEG.includes(t))n++; }); const tot=p+n; return tot? (p-n)/tot : 0; }
+function wow(s){ const v=s.map(p=>p[1]); const a=v.slice(-7).reduce((x,y)=>x+y,0), b=v.slice(-14,-7).reduce((x,y)=>x+y,0); return b>0?(a-b)/b:0; }
+function stab(s){ const v=s.map(p=>p[1]).slice(-28); const m=meanA(v); if(!m) return 0; return Math.max(0,Math.min(1,1-stdA(v)/m)); }
+function last7(s){ return s.map(p=>p[1]).slice(-7).reduce((x,y)=>x+y,0); }
+
+async function resolveWiki(name){
+  try{ const r=await fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&limit=1&namespace=0&format=json&origin=*&search=${encodeURIComponent(name)}`);
+    const j=await r.json(); return (j[1]&&j[1][0]) ? j[1][0].replace(/ /g,'_') : name.replace(/ /g,'_'); }
+  catch(e){ return name.replace(/ /g,'_'); }
+}
+async function fetchWiki(title, days){
+  // End 2 days back: the latest 1-2 days of pageview data aren't finalized and 404 intermittently.
+  const end=new Date(Date.now()-2*864e5), start=new Date(end.getTime()-days*864e5);
+  const f=d=>d.toISOString().slice(0,10).replace(/-/g,'')+'00';
+  try{ const r=await fetch(`https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents/${encodeURIComponent(title)}/daily/${f(start)}/${f(end)}`);
+    if(!r.ok) return []; const j=await r.json();
+    return (j.items||[]).map(it=>[`${it.timestamp.slice(0,4)}-${it.timestamp.slice(4,6)}-${it.timestamp.slice(6,8)}`, it.views]); }
+  catch(e){ return []; }
+}
+async function fetchNews(query){
+  const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),5000);
+  let r; try{ r=await fetch(`https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent('"'+query+'"')}&mode=artlist&format=json&maxrecords=75&timespan=2months&sort=datedesc`,{signal:ctrl.signal}); } finally { clearTimeout(to); }
+  if(!r.ok) throw new Error('news '+r.status); const j=await r.json(); const arts=j.articles||[];
+  const counts={}, mentions=[];
+  arts.forEach(a=>{ const sd=a.seendate||''; if(sd.length<8) return;
+    const date=`${sd.slice(0,4)}-${sd.slice(4,6)}-${sd.slice(6,8)}`;
+    counts[date]=(counts[date]||0)+1;
+    mentions.push({title:a.title||'', url:a.url||'', date, tone:lexScore(a.title||'')}); });
+  return {series:Object.keys(counts).sort().map(d=>[d,counts[d]]), mentions};
+}
+
+async function computeResearchD(names){
+  const ents=[]; for(const nm of names){ ents.push({name:nm, title:await resolveWiki(nm)}); }
+  const entities=ents.map(e=>e.name), brand=entities[0];
+  // Wikipedia: fetch sequentially (concurrent bursts get rate-limited -> empty series), one retry.
+  const wiki={};
+  for(const e of ents){ let s=await fetchWiki(e.title,60); if(!s.length){ await sleep(400); s=await fetchWiki(e.title,60); } wiki[e.name]=s; await sleep(200); }
+  // News (GDELT): best-effort, spaced + one retry; browser CORS makes it intermittent.
+  const news={}, ment={};
+  for(const e of ents){ try{ const r=await fetchNews(e.name); news[e.name]=r.series; ment[e.name]=r.mentions; }catch(err){ news[e.name]=[]; ment[e.name]=[]; } await sleep(900); }
+  // Only surface News Coverage when it's solid: brand present + at least half the field. Else stay Wikipedia-only.
+  const newsList=entities.filter(e=>news[e]&&news[e].length);
+  const newsOk = !!(news[brand] && news[brand].length) && newsList.length>=Math.ceil(entities.length/2);
+  const sources=['wikipedia'], series={wikipedia:{}};
+  entities.forEach(e=>{ if(wiki[e]&&wiki[e].length) series.wikipedia[e]=wiki[e]; });
+  if(newsOk){ sources.push('news'); series.news={}; entities.forEach(e=>{ if(news[e]&&news[e].length) series.news[e]=news[e]; }); }
+  const newsSent={}; entities.forEach(e=>{ const ms=ment[e]||[]; newsSent[e]= ms.length? meanA(ms.map(m=>m.tone)) : 0; });
+  const sov={}, momentum={}, scores=[];
+  sources.forEach(src=>{ const ss=series[src]; const tot={}; let total=0;
+    entities.forEach(e=>{ const t=ss[e]?last7(ss[e]):0; tot[e]=t; total+=t; });
+    sov[src]=entities.filter(e=>ss[e]).map(e=>({entity:e, sov: total?tot[e]/total:0}));
+    momentum[src]=entities.filter(e=>ss[e]).map(e=>({entity:e, wow: wow(ss[e])}));
+    entities.forEach(e=>{ if(!ss[e]) return;
+      const mn=0.5*(1+Math.tanh(wow(ss[e])/0.25)), st=stab(ss[e]);
+      const sent= src==='news'? (newsSent[e]||0) : 0, sn=(sent+1)/2, so= total?tot[e]/total:0;
+      const sc=Math.round(100*(0.35*mn+0.20*st+0.25*sn+0.20*so));
+      scores.push({channel:LABELS[src], entity:e, score:sc, grade:gradeOf(sc)}); }); });
+  const kpis=[]; let sum=0,n=0;
+  sources.forEach(src=>{ const rec=scores.find(s=>s.entity===brand&&s.channel===LABELS[src]);
+    if(rec){ kpis.push({channel:LABELS[src], score:rec.score, grade:rec.grade, wow:(momentum[src].find(m=>m.entity===brand)||{}).wow||0}); sum+=rec.score; n++; } });
+  const overall=n?Math.round(sum/n):0;
+  let mentions=[]; if(newsOk){ entities.forEach(e=>{ (ment[e]||[]).slice(0,12).forEach(m=>mentions.push({when:m.date, brand:e, title:m.title, score:0, sentiment:m.tone})); }); mentions.sort((a,b)=>b.when.localeCompare(a.when)); }
+  return {brand, entities, updated:new Date().toISOString().slice(0,16).replace('T',' ')+' UTC (live)',
+    overall:{score:overall,grade:gradeOf(overall)}, sources, sourceLabels:LABELS, kpis, scores, series, sov, momentum, mentions:mentions.slice(0,40)};
+}
+
+function rBanner(txt){ const b=$('#r-banner'); b.className='rbanner on'; b.textContent=txt; }
+function setMode(m){
+  $('#mode-sample').classList.toggle('on',m==='sample');
+  $('#mode-research').classList.toggle('on',m==='research');
+  $('#research').classList.toggle('on',m==='research');
+  if(m==='research'){ $('#app').style.display='none'; $('#loading').style.display='none'; }
+}
+async function runResearch(){
+  const brand=$('#r-brand').value.trim(); if(!brand){ alert('Enter a brand name first.'); return; }
+  const comps=$('#r-comp').value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,4);
+  const names=[brand,...comps];
+  rBanner(`Fetching live data for ${names.join(', ')}… this can take ~20s while news feeds are polled.`);
+  $('#r-go').disabled=true;
+  try{ const data=await computeResearchD(names);
+    if(!Object.keys(data.series.wikipedia||{}).length){ rBanner('Could not find enough data — check spelling, or use the exact Wikipedia article name.'); return; }
+    const chans=data.sources.map(s=>LABELS[s]).join(' + ');
+    activate(data,
+      `Live research: ${data.brand} vs ${data.entities.slice(1).join(', ')||'—'} across ${chans}. Scored with the same weighted-signal health model as the sample.`,
+      data.updated);
+    rBanner(data.sources.includes('news')
+      ? 'Live — Knowledge Interest (Wikipedia) + News Coverage (GDELT). Google Trends is server-only and not available in-browser.'
+      : 'Live — Knowledge Interest (Wikipedia) only; the news feed was unavailable in-browser this time. Try again in a moment.');
+  }catch(e){ rBanner('Something went wrong: '+e.message); }
+  finally{ $('#r-go').disabled=false; }
+}
+$('#mode-sample').addEventListener('click',()=>{ setMode('sample'); loadSample(); });
+$('#mode-research').addEventListener('click',()=>{ setMode('research'); });
+$('#r-go').addEventListener('click',runResearch);
+document.querySelectorAll('#research .examples button').forEach(b=>b.addEventListener('click',()=>{ $('#r-brand').value=b.dataset.b; $('#r-comp').value=b.dataset.c; runResearch(); }));
+
 addEventListener('resize', () => { if(D){ const on=document.querySelector('#chan-tabs button.on'); if(on) drawChannel(on.dataset.src); }});
 </script>
 </body>
