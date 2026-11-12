@@ -94,6 +94,43 @@ For each `(channel, brand)` pair, four normalized signals combine into one score
 Grades: **A ≥ 75 · B ≥ 60 · C ≥ 45 · D < 45.** Weights live in `config.yaml`
 and are validated to sum to 1.0.
 
+## Marketing Mix Model (Meridian-style, built from scratch)
+
+🔴 **Live:** https://sougatshekharhota.github.io/pulse-360/mmm.html · also a page in the Streamlit app
+
+The health score tells you *how a channel is doing*. The MMM answers the harder question:
+**how much revenue did each channel actually cause, and where should the next rupee go?**
+It follows the design of Google's open-source [Meridian](https://github.com/google/meridian),
+re-implemented from scratch in ~300 lines of NumPy (no TensorFlow, no Meridian code):
+
+| Idea | How it's implemented (`src/mmm.py`) |
+|---|---|
+| **Bayesian, not a point estimate** | Partially collapsed Gibbs sampler: adstock/Hill shapes by Metropolis–Hastings with every linear coefficient integrated out analytically, then exact Gaussian and inverse-gamma draws. 4 chains, split R-hat. |
+| **ROI priors** | Priors sit on ROI (what lift tests measure) and are mapped to coefficients through the current curve shape. A geo-lift result becomes a tight prior in `config.yaml`. |
+| **Adstock** | Geometric carryover, normalized weights, 8-week window. |
+| **Hill saturation** | `x / (x + K)` per channel → response curves and marginal ROI. |
+| **Geo hierarchy** | Each circle gets its own channel effect, partially pooled toward the national mean; big circles are weighted as less noisy. |
+| **Causal ROI** | ROI = revenue(actual) − revenue(channel zeroed), divided by spend. |
+| **Causal controls** | Confounders (festive season, Google query volume, price, promos, competitor promos) in; mediators deliberately out. |
+| **Budget optimizer** | Fixed total, ±30% per channel, greedy on concave posterior curves, with lift reported as a 90% interval. Channels whose ROI interval is too wide are **held**, not moved. |
+| **Honesty checks** | Prior-vs-posterior panel, "prior dominates" warning, collinearity warning, R-hat. |
+
+**Synthetic data with a known answer.** The default input (`data/mmm_input.csv`) simulates an
+Indian telecom brand across 12 circles × 156 weeks with planted ROIs *and* planted traps: Diwali
+lifts demand and spend together, latent intent drives both search spend and sales, competitor promos
+trigger defensive TV, and TV/YouTube share a flighting calendar (r = 0.80). The model recovers every
+planted ROI inside its 90% interval. With the query-volume control removed, it claims Paid Search ROI
+≈ 69 against a truth of 1.1, which is exactly the over-crediting Meridian's GQV control exists to prevent.
+
+```bash
+python run_mmm.py --demo     # regenerate synthetic data + fit (~2 min) -> docs/mmm.json
+python run_mmm.py            # fit your own CSV (path, channels, priors in config.yaml)
+python tests/test_mmm.py     # self-check: planted ROIs inside 90% intervals (~15 s)
+```
+
+Bring your own data: one row per `(geo, week)` with `population`, `revenue`, one spend column per
+channel and your control columns. A single geo (national data) works too; you just lose the pooling.
+
 ## Tracking a different brand
 
 Edit `config.yaml` — name, Wikipedia article, competitors — and re-run the
@@ -126,18 +163,23 @@ competitors:
 pulse-360/
 ├── app.py                      # Streamlit dashboard
 ├── run_fetch.py                # CLI fetch runner (--demo, --sources)
+├── run_mmm.py                  # fit the marketing mix model -> docs/mmm.json
+├── pages/1_Marketing_Mix_Model.py  # Streamlit MMM page
 ├── config.yaml                 # brand, competitors, score weights
 ├── src/
 │   ├── config.py               # config loading + validation
 │   ├── db.py                   # SQLite schema + upserts
 │   ├── transform.py            # derived metrics + health score
 │   ├── demo.py                 # deterministic demo dataset
+│   ├── mmm.py                  # Bayesian MMM engine (adstock, Hill, geo pooling, sampler)
+│   ├── mmm_demo.py             # synthetic geo dataset with known ground truth
 │   └── fetchers/
 │       ├── google_trends.py    # pytrends (best-effort)
 │       ├── wikipedia_views.py  # Wikimedia REST API
 │       ├── gdelt_news.py       # GDELT DOC 2.0 + VADER sentiment
 │       ├── reddit_mentions.py  # optional (Reddit blocks keyless access)
 │       └── ga4.py              # optional, credential-gated
+├── tests/test_mmm.py           # MMM recovery self-check
 └── .github/workflows/refresh-data.yml   # daily scheduled fetch
 ```
 

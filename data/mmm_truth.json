@@ -1,0 +1,30 @@
+{
+  "TV": {
+    "roi": 1.4,
+    "alpha": 0.6,
+    "K": 0.45,
+    "incremental_revenue": 112670.8,
+    "spend": 80479.2
+  },
+  "YouTube": {
+    "roi": 2.2,
+    "alpha": 0.4,
+    "K": 2.5,
+    "incremental_revenue": 96221.0,
+    "spend": 43736.8
+  },
+  "Meta": {
+    "roi": 1.7,
+    "alpha": 0.2,
+    "K": 1.2,
+    "incremental_revenue": 59410.1,
+    "spend": 34947.1
+  },
+  "Paid Search": {
+    "roi": 1.1,
+    "alpha": 0.05,
+    "K": 1.0,
+    "incremental_revenue": 28885.7,
+    "spend": 26259.7
+  }
+}

@@ -50,3 +50,34 @@ health_weights:
   stability: 0.20       # volatility of the daily series (lower churn of attention)
   sentiment: 0.25       # tone of news/community mentions
   share_of_voice: 0.20  # brand share vs competitors
+
+# ---------------------------------------------------------------------------
+# PULSE-MMM — Meridian-style Bayesian marketing mix model (python run_mmm.py)
+# Input: one row per (geo, week). The default file is synthetic, with a known
+# ground truth (data/mmm_truth.json); swap in your own CSV with the same columns.
+mmm:
+  data: data/mmm_input.csv
+  truth: data/mmm_truth.json        # only exists for the synthetic demo
+  currency: "₹ lakh"
+  channels:
+    # roi_prior = what you believe before seeing this data (mean, sd of ROI).
+    # Default is deliberately wide; an experiment gets a tight prior.
+    - name: TV
+      column: spend_tv
+      roi_prior: {mean: 1.5, sd: 1.5, source: "default (no experiment)"}
+    - name: YouTube
+      column: spend_youtube
+      roi_prior: {mean: 2.0, sd: 0.4, source: "geo-lift experiment"}
+    - name: Meta
+      column: spend_meta
+      roi_prior: {mean: 1.5, sd: 1.5, source: "default (no experiment)"}
+    - name: Paid Search
+      column: spend_search
+      roi_prior: {mean: 1.5, sd: 1.5, source: "default (no experiment)"}
+  # Confounders only — things that drive BOTH spend and sales. Mediators
+  # (e.g. brand-search volume that TV itself creates) are left out on purpose.
+  controls: [festive, gqv, price_index, promo, competitor_promo]
+  # Re-fit without these controls to show what a naive model would claim.
+  compare_without: [gqv]
+  sampler: {chains: 4, warmup: 800, draws: 800, seed: 7}
+  optimizer_bounds: 0.3             # each channel may move ±30%; total fixed

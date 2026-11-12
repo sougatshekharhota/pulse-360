@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PULSE-360 ✲ Marketing Mix Model</title>
+<meta name="description" content="A Meridian-style Bayesian marketing mix model: ROI with credible intervals, adstock, saturation curves, geo pooling, causal controls and budget optimization. By Sougat Shekhar Hota.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F8FA; --ink:#051C2C; --mut:rgba(5,28,44,.58); --line:rgba(5,28,44,.14);
+    --card:#FFFFFF; --panel:#E6EBF1; --accent:#2251FF;
+    --good:#0f7a3d; --warn:#b7791f; --bad:#c0362c;
+    --serif:'Newsreader', Georgia, serif; --sans:'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased}
+  body::before{content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:72px 72px; opacity:.13}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 clamp(16px,4vw,40px); position:relative; z-index:1}
+  a{color:inherit}
+  .caps{font:500 11px/1 var(--sans); text-transform:uppercase; letter-spacing:.1em}
+  header.site{position:sticky; top:0; z-index:20; background:rgba(246,248,250,.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+  header.site .wrap{display:flex; align-items:center; justify-content:space-between; padding:16px clamp(16px,4vw,40px)}
+  .brand{font:600 14px/1 var(--sans); text-transform:uppercase; letter-spacing:.12em; text-decoration:none; display:flex; align-items:center; gap:9px}
+  .brand .mark{color:var(--accent); font:400 17px/1 var(--serif); animation:spin 14s linear infinite; display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .hl{display:flex; gap:22px; font:500 12px/1 var(--sans); text-transform:uppercase; letter-spacing:.09em}
+  .hl a{color:var(--mut); text-decoration:none; transition:color .3s} .hl a:hover,.hl a.on{color:var(--accent)}
+  .hero{padding:clamp(40px,7vh,72px) 0 12px}
+  .hero .eyebrow{color:var(--accent)}
+  .hero h1{font:400 clamp(34px,5.5vw,62px)/1.03 var(--serif); letter-spacing:-.015em; margin:14px 0 12px}
+  .hero p{font:400 clamp(15px,1.9vw,18px)/1.5 var(--serif); color:var(--mut); max-width:64ch}
+  .updated{margin-top:10px; font-size:12.5px; color:var(--mut)}
+  .note{margin-top:18px; background:#EEF2FF; border:1px solid rgba(34,81,255,.25); border-radius:12px; padding:14px 16px; font-size:14px; line-height:1.5}
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin:26px 0 8px}
+  .kpi{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; border-top:4px solid var(--c)}
+  .kpi .lab{font:500 11px/1.3 var(--sans); text-transform:uppercase; letter-spacing:.09em; color:var(--mut)}
+  .kpi .val{font:400 34px/1 var(--serif); margin:10px 0 6px}
+  .kpi .val small{font:400 14px/1 var(--sans); color:var(--mut)}
+  .kpi .sub{font-size:12.5px; color:var(--mut); line-height:1.45}
+  .tag{display:inline-block; font:600 11px/1 var(--sans); padding:4px 8px; border-radius:999px; background:var(--panel); margin-top:8px}
+  section{padding:34px 0}
+  h2.sec{font:400 clamp(24px,3vw,34px)/1.1 var(--serif); margin-bottom:4px}
+  .sub2{color:var(--mut); font-size:14px; margin-bottom:18px; max-width:80ch; line-height:1.5}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 24px}
+  .chart{width:100%; height:320px} .chart.sm{height:230px} .chart.lg{height:380px}
+  .row2{display:grid; grid-template-columns:1.1fr 1fr; gap:20px; align-items:start}
+  .row2>*{min-width:0}
+  .grid4{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px}
+  .grid4 .card{padding:14px 14px 10px}
+  .grid4 .foot{font-size:12px; color:var(--mut); line-height:1.45; padding:4px 6px 4px}
+  table{width:100%; border-collapse:collapse; font-size:13.5px}
+  th,td{text-align:left; padding:11px 10px; border-bottom:1px solid var(--line)}
+  th{font:600 11px/1 var(--sans); text-transform:uppercase; letter-spacing:.07em; color:var(--mut)}
+  td.n, th.n{text-align:right; font-variant-numeric:tabular-nums}
+  .pos{color:var(--good)} .neg{color:var(--bad)} .held{color:var(--warn)}
+  .lift{margin-top:18px; display:flex; gap:14px; align-items:baseline; flex-wrap:wrap}
+  .lift .big{font:400 36px/1 var(--serif)} .lift .rng{color:var(--mut); font-size:13px}
+  .warn{background:#FFF8EB; border:1px solid rgba(183,121,31,.35); border-radius:12px; padding:12px 16px; margin-bottom:10px; font-size:14px; line-height:1.5}
+  ul.cav{padding-left:20px; line-height:1.65; font-size:14.5px}
+  details{margin-top:18px} summary{cursor:pointer; font-weight:600; font-size:14px}
+  footer{border-top:1px solid var(--line); padding:30px 0 44px; color:var(--mut); font-size:13px; margin-top:20px}
+  footer a{color:var(--accent); text-decoration:none}
+  #loading{padding:60px 0; text-align:center; color:var(--mut); font-family:var(--serif); font-style:italic; font-size:18px}
+  code{background:var(--panel); padding:1px 5px; border-radius:4px; font-size:.92em}
+  @media (max-width:820px){ .row2{grid-template-columns:1fr} .hl a.hide-sm{display:none} }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">✲</span> PULSE-360</a>
+    <div class="hl">
+      <a href="index.html">Health</a>
+      <a href="mmm.html" class="on">Mix Model</a>
+      <a class="hide-sm" href="https://github.com/sougatshekharhota/pulse-360" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+  <div class="hero">
+    <div class="eyebrow caps">Bayesian Marketing Mix Model</div>
+    <h1>What actually <em>caused</em> the sales.</h1>
+    <p>A Meridian-style MMM written from scratch in NumPy: every channel's ROI comes with a credible interval,
+      carryover and diminishing returns are built in, regions borrow strength from each other, and ROI is a
+      counterfactual — revenue with the channel minus revenue without it.</p>
+    <div class="updated" id="updated"></div>
+    <div class="note" id="synthetic" style="display:none"></div>
+  </div>
+
+  <div id="loading">Loading posterior…</div>
+  <div id="app" style="display:none">
+    <div class="kpis" id="kpis"></div>
+
+    <section>
+      <div class="row2">
+        <div>
+          <h2 class="sec">ROI with uncertainty</h2>
+          <div class="sub2">Dot = posterior median, bar = 90% credible interval, ◆ = true value. A wide bar is the model saying <em>we don't know</em>.</div>
+          <div class="card"><div id="roi" class="chart"></div></div>
+        </div>
+        <div>
+          <h2 class="sec">Budget reallocation</h2>
+          <div class="sub2" id="opt-sub"></div>
+          <div class="card" style="overflow-x:auto"><table id="opt"></table>
+            <div class="lift"><span class="caps" style="color:var(--accent)">Expected extra revenue</span><span class="big" id="lift"></span><span class="rng" id="lift-rng"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="sec">Response curves</h2>
+      <div class="sub2">Incremental revenue if each channel's whole plan were scaled from 0× to 2×. Band = 90% interval. ● current spend, ○ recommended. The flattening is saturation, and it's what makes reallocation possible.</div>
+      <div class="grid4" id="curves"></div>
+    </section>
+
+    <section id="causal-sec">
+      <h2 class="sec">Why the causal controls matter</h2>
+      <div class="sub2" id="causal-sub"></div>
+      <div class="card"><div id="causal" class="chart"></div></div>
+    </section>
+
+    <section>
+      <h2 class="sec">Prior vs posterior</h2>
+      <div class="sub2">Dotted curve = prior (belief before this data). Bars = posterior. If the two look alike, the answer came from the prior, not the data.</div>
+      <div class="grid4" id="priors"></div>
+    </section>
+
+    <section>
+      <h2 class="sec">What drove revenue, week by week</h2>
+      <div class="sub2">National revenue split into baseline (geo intercepts, trend, season, controls) and each channel's incremental contribution. Dark line = actual.</div>
+      <div class="card"><div id="decomp" class="chart lg"></div></div>
+    </section>
+
+    <section>
+      <h2 class="sec">Read before acting</h2>
+      <div id="warnings" style="margin:14px 0 18px"></div>
+      <ul class="cav">
+        <li><b>Still observational data.</b> The causal reading is only as good as the controls — miss a confounder (a competitor's price cut) and the intervals will be confidently wrong.</li>
+        <li><b>Priors can dominate.</b> Check the prior-vs-posterior panel; a posterior that copies its prior isn't evidence.</li>
+        <li><b>Correlated channels are hard to separate.</b> If two channels always flight together, only geo-level differences or deliberate tests can split them.</li>
+        <li><b>Best practice:</b> feed periodic lift-test results back in as ROI priors. The model and the experiments keep each other honest.</li>
+      </ul>
+      <details class="card" style="padding:16px 20px"><summary>Model diagnostics</summary><div id="diag" style="margin-top:12px; overflow-x:auto"></div></details>
+    </section>
+  </div>
+</main>
+
+<footer><div class="wrap">
+  <span>Fitted offline with <code>python run_mmm.py</code> (partially collapsed Gibbs sampler, NumPy only) and served as static JSON.
+  Inspired by Google Meridian; no Meridian code used. Built by <a href="https://sougatshekharhota.github.io/portfolio/">Sougat Shekhar Hota</a>.</span>
+</div></footer>
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const SERIES = ['#2251FF','#1baf7a','#eda100','#008300','#4a3aa7','#e34948'];
+const INK='#051C2C', MUT='rgba(5,28,44,.55)', GRID='rgba(5,28,44,.10)';
+const BASE = {displayModeBar:false, responsive:true};
+const L = (o={}) => Object.assign({
+  margin:{l:48,r:14,t:10,b:40}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+  font:{family:"'Helvetica Neue',Arial,sans-serif", color:MUT, size:12}, showlegend:false,
+}, o);
+const ax = (o={}) => Object.assign({gridcolor:GRID, zeroline:false}, o);
+const cr = lakh => '₹' + Math.round(lakh/100).toLocaleString('en-IN') + ' Cr';
+const pct = x => (x>=0?'+':'') + Math.round(x*100) + '%';
+const rgba = (h,a) => `rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${a})`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const interp = (x, xs, ys) => { for (let i=1;i<xs.length;i++) if (x<=xs[i]) { const t=(x-xs[i-1])/(xs[i]-xs[i-1]); return ys[i-1]+t*(ys[i]-ys[i-1]); } return ys[ys.length-1]; };
+
+fetch('mmm.json').then(r => r.json()).then(M => {
+  const CH = M.channels, col = {}; CH.forEach((c,i) => col[c.name] = SERIES[i]);
+  $('#updated').textContent = `${M.geos.length} geos × ${M.weeks.length} weeks · ${M.weeks[0]} → ${M.weeks[M.weeks.length-1]} · fitted ${M.generated}`;
+  if (M.synthetic) { const n = $('#synthetic'); n.style.display='block';
+    n.innerHTML = `<b>Synthetic data with a known answer.</b> A simulated Indian telecom brand across ${M.geos.length} circles, with planted ROIs and planted confounders (Diwali, search intent, competitor promos). The ◆ markers are the true values, so you can check the model's work.`; }
+
+  // KPIs
+  $('#kpis').innerHTML = CH.map(c => `<div class="kpi" style="--c:${col[c.name]}">
+    <div class="lab">${esc(c.name)}</div>
+    <div class="val">${c.roi.median.toFixed(2)} <small>ROI</small></div>
+    <div class="sub">90% interval ${c.roi.lo.toFixed(2)}–${c.roi.hi.toFixed(2)}<br>next ₹1 returns ₹${c.mroi.median.toFixed(2)}${'truth' in c ? ` · truth ${c.truth}` : ''}</div>
+    <span class="tag">${esc(c.saturation)}</span></div>`).join('');
+
+  // ROI forest
+  const rev = [...CH].reverse(), tr = [];
+  rev.forEach(c => {
+    tr.push({x:[c.roi.lo,c.roi.hi], y:[c.name,c.name], mode:'lines', line:{color:col[c.name], width:9}, hoverinfo:'skip'});
+    tr.push({x:[c.roi.median], y:[c.name], mode:'markers', marker:{color:'#fff', size:12, line:{color:col[c.name], width:3}},
+             hovertemplate:`${c.name}: ${c.roi.median.toFixed(2)} [${c.roi.lo.toFixed(2)}–${c.roi.hi.toFixed(2)}]<extra></extra>`});
+    if ('truth' in c) tr.push({x:[c.truth], y:[c.name], mode:'markers', marker:{symbol:'diamond', color:INK, size:10}, hovertemplate:`truth ${c.truth}<extra></extra>`});
+  });
+  Plotly.newPlot('roi', tr, L({margin:{l:90,r:14,t:10,b:44}, hovermode:'closest',
+    xaxis:ax({title:'₹ revenue per ₹1 spent', rangemode:'tozero'}), yaxis:ax(),
+    shapes:[{type:'line', x0:1, x1:1, yref:'paper', y0:0, y1:1, line:{color:MUT, dash:'dot'}}]}), BASE);
+
+  // optimizer
+  const O = M.optimizer;
+  $('#opt-sub').textContent = `Same total budget (${cr(O.total)} over the period); each channel may move ±${Math.round(O.bounds*100)}%. Channels the model is unsure about are held.`;
+  $('#opt').innerHTML = `<tr><th>Channel</th><th class="n">Current</th><th class="n">Recommended</th><th class="n">Change</th><th class="n">mROI</th></tr>` +
+    CH.map(c => `<tr><td>${esc(c.name)}</td><td class="n">${cr(c.spend)}</td><td class="n">${cr(c.optimal_spend)}</td>
+      <td class="n ${c.held ? 'held' : c.change_pct >= 0 ? 'pos' : 'neg'}">${c.held ? 'held' : pct(c.change_pct)}</td>
+      <td class="n">${c.mroi.median.toFixed(2)}</td></tr>`).join('');
+  $('#lift').textContent = cr(O.lift.median);
+  $('#lift-rng').textContent = `90%: ${cr(O.lift.lo)} – ${cr(O.lift.hi)}`;
+
+  // response curves
+  const mults = M.curves.mults, i1 = mults.indexOf(1);
+  $('#curves').innerHTML = CH.map((c,i) => `<div class="card"><div class="caps" style="color:${col[c.name]};padding:4px 6px">${esc(c.name)}</div><div id="cv${i}" class="chart sm"></div></div>`).join('');
+  CH.forEach((c,i) => {
+    const cv = M.curves[c.name], xs = mults.map(m => m*c.spend/100), k = col[c.name];
+    const t = [
+      {x:[...xs, ...xs.slice().reverse()], y:[...cv.hi.map(v=>v/100), ...cv.lo.slice().reverse().map(v=>v/100)], fill:'toself', fillcolor:rgba(k,.18), line:{width:0}, hoverinfo:'skip'},
+      {x:xs, y:cv.median.map(v=>v/100), line:{color:k, width:2.5}, hovertemplate:'spend ₹%{x:,.0f} Cr → +₹%{y:,.0f} Cr<extra></extra>'},
+      {x:[c.spend/100], y:[cv.median[i1]/100], mode:'markers', marker:{color:k, size:10}, hoverinfo:'skip'},
+    ];
+    if (Math.abs(c.change_pct) > .005) t.push({x:[c.optimal_spend/100], y:[interp(1+c.change_pct, mults, cv.median)/100], mode:'markers', marker:{color:'#fff', size:10, line:{color:k, width:2.5}}, hoverinfo:'skip'});
+    Plotly.newPlot('cv'+i, t, L({margin:{l:46,r:8,t:6,b:38}, hovermode:'closest', xaxis:ax({title:'spend, ₹ Cr'}), yaxis:ax({title: i===0 ? 'incremental, ₹ Cr' : ''})}), BASE);
+  });
+
+  // causal comparison
+  if (CH.every(c => c.roi_without)) {
+    const dropped = M.compare_without.join(', ');
+    $('#causal-sub').innerHTML = `Same model re-fitted <b>without <code>${esc(dropped)}</code></b> (Google query volume — a measure of purchase intent that already existed). Search ads show up when people already want the product, so without it the model credits search with demand it didn't create.`;
+    const names = CH.map(c => c.name), t = [
+      {type:'bar', name:`Without ${dropped}`, x:names, y:CH.map(c=>c.roi_without.median), marker:{color:'rgba(5,28,44,.35)'}, text:CH.map(c=>c.roi_without.median.toFixed(1)), textposition:'outside'},
+      {type:'bar', name:'With causal controls', x:names, y:CH.map(c=>c.roi.median), marker:{color:SERIES[0]}, text:CH.map(c=>c.roi.median.toFixed(1)), textposition:'outside'},
+    ];
+    if (CH.every(c => 'truth' in c)) t.push({name:'Truth', x:names, y:CH.map(c=>c.truth), mode:'markers', marker:{symbol:'diamond', size:11, color:INK}});
+    Plotly.newPlot('causal', t, L({barmode:'group', showlegend:true, legend:{orientation:'h', y:1.12}, hovermode:'closest',
+      yaxis:ax({type:'log', title:'ROI (log scale)'}), xaxis:ax()}), BASE);
+  } else $('#causal-sec').style.display = 'none';
+
+  // prior vs posterior
+  $('#priors').innerHTML = CH.map((c,i) => `<div class="card"><div class="caps" style="color:${col[c.name]};padding:4px 6px">${esc(c.name)}</div><div id="pp${i}" class="chart sm" style="height:180px"></div>
+    <div class="foot">Prior ${c.prior.mean} ± ${c.prior.sd} (${esc(c.prior.source)}). Posterior is ${Math.round(c.prior_dominance*100)}% as wide.</div></div>`).join('');
+  CH.forEach((c,i) => {
+    const e = c.posterior_hist.edges, w = e[1]-e[0], tot = c.posterior_hist.counts.reduce((a,b)=>a+b,0)*w;
+    const mu = c.prior.mean, sd = c.prior.sd, lo = Math.min(e[0], mu-2.5*sd, 0), hi = Math.max(e[e.length-1], mu+2.5*sd);
+    const xs = Array.from({length:121}, (_,j) => lo + (hi-lo)*j/120);
+    Plotly.newPlot('pp'+i, [
+      {type:'bar', x:e.slice(0,-1).map((v,j)=>(v+e[j+1])/2), y:c.posterior_hist.counts.map(n=>n/tot), width:w, marker:{color:rgba(col[c.name],.75)}, hoverinfo:'skip'},
+      {x:xs, y:xs.map(x => Math.exp(-.5*((x-mu)/sd)**2)/(sd*Math.sqrt(2*Math.PI))), line:{color:MUT, width:2, dash:'dot'}, hoverinfo:'skip'},
+    ], L({margin:{l:10,r:8,t:6,b:34}, xaxis:ax({title:'ROI'}), yaxis:ax({showticklabels:false})}), BASE);
+  });
+
+  // decomposition
+  const Dc = M.decomposition, t = [{x:M.weeks, y:Dc.baseline.map(v=>v/100), name:'Baseline', stackgroup:'one', line:{width:0}, fillcolor:'rgba(5,28,44,.12)'}];
+  CH.forEach(c => t.push({x:M.weeks, y:Dc[c.name].map(v=>v/100), name:c.name, stackgroup:'one', line:{width:0}, fillcolor:rgba(col[c.name],.8)}));
+  t.push({x:M.weeks, y:Dc.actual.map(v=>v/100), name:'Actual', line:{color:INK, width:1.5}});
+  Plotly.newPlot('decomp', t, L({showlegend:true, legend:{orientation:'h', y:1.1}, hovermode:'x unified', xaxis:ax(),
+    yaxis:ax({title:'₹ Cr / week', range:[Math.min(...Dc.baseline)/100*.9, Math.max(...Dc.actual)/100*1.03]})}), BASE);
+
+  // warnings + diagnostics
+  $('#warnings').innerHTML = M.warnings.map(w => `<div class="warn">⚠ ${esc(w)}</div>`).join('');
+  $('#diag').innerHTML = `<p style="font-size:13.5px;margin-bottom:10px">R² (national weekly) ${M.fit.r2.toFixed(3)} · MAPE ${(M.fit.mape*100).toFixed(2)}% · max R-hat ${M.fit.max_rhat.toFixed(3)} (&lt; 1.1 = chains agree)</p>
+    <table><tr><th>Channel</th><th class="n">Adstock decay</th><th class="n">Half-saturation (× median spend)</th><th class="n">R-hat</th><th class="n">MH acceptance</th></tr>` +
+    CH.map(c => `<tr><td>${esc(c.name)}</td><td class="n">${c.alpha}</td><td class="n">${c.K}</td><td class="n">${c.rhat}</td><td class="n">${Math.round(M.sampler.acceptance[c.name]*100)}%</td></tr>`).join('') +
+    `</table><p style="font-size:13px;color:var(--mut);margin-top:10px">Controls (confounders): <code>${M.controls.map(esc).join(', ')}</code> + trend + 2 annual Fourier pairs + one intercept per geo. ${M.sampler.chains} chains × ${M.sampler.draws} draws after ${M.sampler.warmup} warm-up.</p>`;
+
+  $('#loading').style.display = 'none'; $('#app').style.display = 'block';
+  window.dispatchEvent(new Event('resize'));
+}).catch(err => { $('#loading').textContent = 'Could not load mmm.json — run python run_mmm.py --demo'; console.error(err); });
+</script>
+</body>
+</html>
